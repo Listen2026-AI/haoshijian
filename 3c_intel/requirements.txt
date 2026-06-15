@@ -1,0 +1,17 @@
+# HTTP 请求与解析
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+lxml>=4.9.0
+
+# 定时任务（schedule 方式，cron 方式无需此依赖）
+schedule>=1.2.0
+
+# 环境变量加载
+python-dotenv>=1.0.0
+
+# OpenAI AI 总结（可选，没有 key 时会自动降级为本地模板总结）
+openai>=1.30.0
+
+# 可选：当目标站点强反爬、必须渲染 JS 时启用 Playwright
+# 安装后还需执行：playwright install chromium
+# playwright>=1.44.0
