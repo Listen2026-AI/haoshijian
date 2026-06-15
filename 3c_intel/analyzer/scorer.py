@@ -9,7 +9,8 @@ score = 排名权重 + 多平台出现加分 + 关键词命中加分
 - 关键词加分：命中“新品/Pro/AI”等关键词，代表新品 / 高端 / 智能趋势。
 """
 
-from typing import Dict, List
+import re
+from typing import Dict, List, Tuple
 
 from config import (
     KEYWORD_SCORES,
@@ -21,6 +22,20 @@ from utils.logger import get_logger
 
 logger = get_logger("scorer")
 
+# 判断关键词是否为纯 ASCII（英文/数字）。
+# ASCII 关键词用「词边界」匹配，避免 ai 命中 AirPods、max 命中 maximum 等误判；
+# 中文等无空格分词的关键词仍用「子串包含」匹配。
+_ASCII_RE = re.compile(r"^[\x00-\x7f]+$")
+
+
+def _keyword_matches(name_lower: str, keyword: str) -> bool:
+    """判断单个关键词是否命中商品名。"""
+    kw = keyword.lower()
+    if _ASCII_RE.match(kw):
+        # 词边界匹配：前后必须是非字母数字（或字符串首尾）
+        return re.search(rf"(?<![a-z0-9]){re.escape(kw)}(?![a-z0-9])", name_lower) is not None
+    return kw in name_lower
+
 
 def _rank_score(rank: int) -> float:
     """排名权重：第 1 名得满分，线性递减到榜尾。"""
@@ -28,13 +43,13 @@ def _rank_score(rank: int) -> float:
     return max(0.0, RANK_BASE_SCORE - (rank - 1) * step)
 
 
-def _keyword_score(name: str) -> (float, List[str]):
+def _keyword_score(name: str) -> Tuple[float, List[str]]:
     """关键词命中加分，返回 (加分, 命中的关键词列表)。"""
     name_lower = (name or "").lower()
     total = 0.0
     hits: List[str] = []
     for kw, sc in KEYWORD_SCORES.items():
-        if kw.lower() in name_lower:
+        if _keyword_matches(name_lower, kw):
             total += sc
             hits.append(kw)
     return total, hits
