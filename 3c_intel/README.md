@@ -89,6 +89,16 @@ cp .env.example .env
 python main.py
 ```
 
+**调试用开关**（本地验证很方便）：
+
+```bash
+# 只测采集：抓取并打印每条结果，不评分/不总结/不推送
+python main.py --collect-only
+
+# 跑完整流程并存档，但跳过企业微信推送（本地没配 webhook 时用这个看产出）
+python main.py --no-push
+```
+
 执行后：
 - 日报会推送到企业微信群；
 - 结果同时存档到 `data/report_YYYYMMDD.json`；
